@@ -17,8 +17,12 @@
     "refreshYarn": "rm -rf ./node_modules ./yarn.lock && yarn",
     "runWatcher": "rimraf cypress/reports && ts-node src/index.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "cypress",
+    "CI/CD",
+    "slack"
+  ],
+  "author": "jzsplk",
   "license": "ISC",
   "devDependencies": {
     "@types/commander": "^2.12.2",
@@ -29,6 +33,7 @@
     "cypress-multi-reporters": "^1.2.4",
     "del": "^5.1.0",
     "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
     "jest": "^25.1.0",
     "lodash": "^4.17.15",
     "mocha": "^7.1.0",
