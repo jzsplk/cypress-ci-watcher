@@ -15,7 +15,8 @@
     "test": "sudo npm i -g && cypress-ci-watcher",
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install",
     "refreshYarn": "rm -rf ./node_modules ./yarn.lock && yarn",
-    "runWatcher": "rimraf cypress/reports && ts-node src/index.ts"
+    "runWatcher": "rimraf cypress/reports && ts-node src/index.ts",
+    "publish-package": "npm run build && npm publish"
   },
   "keywords": [
     "cypress",
