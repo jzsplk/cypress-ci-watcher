@@ -1,9 +1,17 @@
 #!/usr/bin/env node
+/// <reference path='../node_modules/cypress/types/cypress-npm-api.d.ts'/>
+import * as CypressApi from "cypress";
+import { sendMessage } from "./slack/utils/slack";
+import { omit } from "lodash";
 const chalk = require('chalk');
 const clear = require('clear');
 const figlet = require('figlet');
 const path = require('path');
-const program = require('commander');
+import program from 'commander'
+const marge = require("mochawesome-report-generator");
+const { merge } = require("mochawesome-merge");
+const del = require("del")
+const yargs = require("yargs");
 
 clear();
 console.log(
@@ -13,23 +21,64 @@ console.log(
 
 );
 
-program
-	.version('0.0.2')
-	.description("An example CLI for watch cypress run in ci")
-	.option('-p, --peppers', 'Add peppers')
-	.option('-P, --pineapple', 'Add pineapple')
-	.option('-b, --bbq', 'Add bbq sauce')
-	.option('-c, --cheese <type>', 'Add the specified type of cheese [marble]')
-	.option('-C, --no-cheese', 'You do not want any cheese')
-	.parse(process.argv);
+// cypress run below
+function generateReport(options: any) {
+	return merge(options).then((report: any) => marge.create(report, options));
+}
 
-console.log('you ordered a pizza with:');
-if (program.peppers) console.log('  - peppers');
-if (program.pineapple) console.log('  - pineapple');
-if (program.bbq) console.log('  - bbq');
-const cheese: string = true === program.cheese ? 'marble' : program.cheese || 'no';
-console.log('  - %s cheese', cheese);
+
+const parsedArgs = omit(yargs.parse(process.argv.slice(2)), "_", "$0");
+const options = {
+	reporter: "cypress-multi-reporters",
+	reporterOptions: {
+		reporterEnabled: "mocha-junit-reporter, mochawesome",
+		mochaJunitReporterReporterOptions: {
+			mochaFile: "cypress/reports/junit/test_results[hash].xml",
+			toConsole: false
+		},
+		mochawesomeReporterOptions: {
+			reportDir: "cypress/reports/mocha",
+			quiet: true,
+			overwrite: false,
+			html: false,
+			json: true
+		}
+	},
+	...parsedArgs
+};
+
+const runner = async function () {
+	try {
+		await CypressApi.run(options);
+
+		const generatedReport = await generateReport({
+			files: ["cypress/reports/mocha/*.json"],
+			inline: true,
+			saveJson: true
+		});
+
+		console.log("generated report: ", generatedReport);
+
+		await del(["cypress/reports/mocha/mochawesome_*.json"]);
+
+		await sendMessage("mochawesome-report");
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+
+program
+	.version('0.0.1')
+	.description("An example CLI for watch cypress run in ci")
+	.option('-S, --spec', 'You decide which folder to run test')
+	.parse(process.argv)
+
+const spec = program.spec;
+console.log(`you start cypress run: --spec ${spec}`);
 
 if (!process.argv.slice(2).length) {
 	program.outputHelp();
 }
+
+runner()

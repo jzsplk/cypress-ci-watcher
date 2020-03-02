@@ -1,0 +1,9 @@
+{
+	"baseUrl": "https://admine2e.returnscenter.com",
+	"projectId": "nkhmz8",
+	"video": true,
+	"reporter": "cypress-multi-reporters",
+	"reporterOptions": {
+		"configFile": "reporterOpts.json"
+	}
+}
