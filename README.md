@@ -5,7 +5,7 @@
 [![Tested with Jest](https://img.shields.io/badge/tested_with-Jest-99424f.svg)](https://github.com/facebook/jest)
 
 ## Support CI
-1. we support travis ci for now.
+1. we support [travis ci](https://travis-ci.org/) for now.
 
 
 ## Get started
