@@ -1,6 +1,6 @@
 {
   "name": "cypress-ci-watcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "get cypress test report in ci and send to your slack channel",
   "main": "./lib/index.js",
   "bin": {
