@@ -2,6 +2,7 @@
 /// <reference path='../node_modules/cypress/types/cypress-npm-api.d.ts'/>
 import * as CypressApi from "cypress";
 import { sendMessage } from "./slack/utils/slack";
+import { reportParser } from "./utils/getTestReportStatus";
 import _ from "lodash";
 import { parseOpts } from "./utils/parseOpts";
 import { exit, logErrorExit1 } from "./utils/process";
@@ -246,8 +247,6 @@ program
       await del(["cypress/reports/mocha/mochawesome_*.json"]);
 
       await sendMessage("mochawesome-report");
-
-      await exit(0);
     } catch (e) {
       logErrorExit1(e);
     }

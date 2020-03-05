@@ -4,6 +4,7 @@ import { MessageAttachment } from "@slack/types";
 import { reportParser } from "../../utils/getTestReportStatus";
 import { webhookInitialArgs } from "./messageConstructors";
 import { config } from "dotenv";
+import { exit, logErrorExit1 } from "../../utils/process";
 config();
 
 // add webhook url in env
@@ -15,6 +16,9 @@ export async function sendMessage(_reportDir: string) {
   // process the test report
   const reportParsed = reportParser(_reportDir);
   await constructMessage(reportParsed);
+  if (reportParsed.status !== TestStatus.passed) {
+    exit(1);
+  }
 }
 
 export async function constructMessage(
@@ -34,7 +38,7 @@ export async function constructMessage(
       try {
         return await webhook.send(sendArguments);
       } catch (e) {
-        console.log(e);
+        logErrorExit1(e);
       }
       break;
     }
@@ -43,7 +47,9 @@ export async function constructMessage(
       try {
         await webhook.send(sendArguments);
       } catch (e) {
-        console.log(e);
+        logErrorExit1(e);
+      } finally {
+        exit(1);
       }
       break;
     }
@@ -64,45 +70,46 @@ export function webhookSendArgs(
     attachments: messageAttachments,
     blocks: [
       {
-        type: 'section', text: {
-          type: 'mrkdwn',
+        type: "section",
+        text: {
+          type: "mrkdwn",
           text: `:fire: look like you better check your BDD tests :triumph: on [github](https://github.com/${process.env.TRAVIS_REPO_SLUG})`
         }
       },
-      { type: 'divider' },
+      { type: "divider" },
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'mrkdwn',
-          text: `*check build #${process.env.TRAVIS_BUILD_NUMBER}* :point_right:`,
+          type: "mrkdwn",
+          text: `*check build #${process.env.TRAVIS_BUILD_NUMBER}* :point_right:`
         },
         accessory: {
-          type: 'button',
+          type: "button",
           text: {
-            type: 'plain_text',
+            type: "plain_text",
             emoji: true,
             text: `#${process.env.TRAVIS_BUILD_NUMBER}`
           },
-          url: `${process.env.TRAVIS_BUILD_WEB_URL ?? ''}`
+          url: `${process.env.TRAVIS_BUILD_WEB_URL ?? ""}`
         }
       },
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'mrkdwn',
-          text: `*check job #${process.env.TRAVIS_JOB_NUMBER}* :point_right:`,
+          type: "mrkdwn",
+          text: `*check job #${process.env.TRAVIS_JOB_NUMBER}* :point_right:`
         },
         accessory: {
-          type: 'button',
+          type: "button",
           text: {
-            type: 'plain_text',
+            type: "plain_text",
             emoji: false,
             text: `#${process.env.TRAVIS_JOB_NUMBER}`
           },
           url: `${process.env.TRAVIS_JOB_WEB_URL}`
         }
       },
-      { type: 'divider' }
+      { type: "divider" }
     ]
   };
   return argsWebhookSend;
@@ -131,7 +138,7 @@ export function attachmentReports(
         color: "#ff0000",
         // fallback: `Report available at ${reportHTMLUrl}`,
         title: `Total Failed: ${totalFailures}`,
-        text: `Total Tests: ${totalTests}\nTotal Passed:  ${totalPasses} `,
+        text: `Total Tests: ${totalTests}\nTotal Passed:  ${totalPasses} `
       };
     }
     case TestStatus.error: {
